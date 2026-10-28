@@ -5,7 +5,18 @@ import { env } from './env.js';
 import { registerCommands } from './commands.js';
 import { provisionGuild } from './provision.js';
 import { ensureGuildRow, getGuild, pool, setInstalled } from './store.js';
-import { ACCEPT_RULES_ID, handleAcceptRules } from './modules/welcome.js';
+import {
+  ACCEPT_RULES_ID,
+  REGISTER_CLASS_ID,
+  REGISTER_FORM_PREFIX,
+  REGISTER_ID,
+  handleMemberJoined,
+  handleMemberLeftGoodbye,
+  handleRegisterClass,
+  handleRegistrationSubmit,
+  startRegistration,
+} from './modules/welcome.js';
+import { PICK_CLASS_ID, PICK_PING_ID, handlePickClass, handlePickPing, handleRank } from './modules/roles.js';
 import {
   APPLY_CLASS_ID,
   APPLY_FORM_PREFIX,
@@ -51,7 +62,12 @@ client.on(Events.GuildDelete, async (guild) => {
   await setInstalled(guild.id, false).catch(() => undefined);
 });
 
+client.on(Events.GuildMemberAdd, async (member) => {
+  await handleMemberJoined(member).catch((e) => console.error('[welcome] join', e));
+});
+
 client.on(Events.GuildMemberRemove, async (member) => {
+  await handleMemberLeftGoodbye(member).catch((e) => console.error('[goodbye] leave', e));
   await handleMemberLeft(member.guild, member.id).catch((e) => console.error('[roster] leave', e));
 });
 
@@ -59,20 +75,26 @@ client.on(Events.InteractionCreate, async (i: Interaction) => {
   if (!i.inCachedGuild()) return;
   try {
     if (i.isChatInputCommand()) {
+      if (i.commandName === 'register') return await startRegistration(i);
+      if (i.commandName === 'rank') return await handleRank(i);
       if (i.commandName === 'apply') return await startApplication(i);
       if (i.commandName === 'profile') return await handleProfile(i);
       if (i.commandName === 'roster') return await handleRoster(i);
     } else if (i.isAutocomplete()) {
       return await handleClassAutocomplete(i);
     } else if (i.isButton()) {
-      if (i.customId === ACCEPT_RULES_ID) return await handleAcceptRules(i);
+      if (i.customId === REGISTER_ID || i.customId === ACCEPT_RULES_ID) return await startRegistration(i);
       if (i.customId === APPLY_ID) return await startApplication(i);
       if (i.customId.startsWith(APPROVE_PREFIX)) return await handleReview(i, true);
       if (i.customId.startsWith(REJECT_PREFIX)) return await handleReview(i, false);
     } else if (i.isStringSelectMenu()) {
       if (i.customId === APPLY_CLASS_ID) return await handleClassPicked(i);
+      if (i.customId === REGISTER_CLASS_ID) return await handleRegisterClass(i);
+      if (i.customId === PICK_CLASS_ID) return await handlePickClass(i);
+      if (i.customId === PICK_PING_ID) return await handlePickPing(i);
     } else if (i.isModalSubmit()) {
       if (i.customId.startsWith(APPLY_FORM_PREFIX)) return await handleApplicationSubmit(i);
+      if (i.customId.startsWith(REGISTER_FORM_PREFIX)) return await handleRegistrationSubmit(i);
     }
   } catch (err) {
     console.error('[interaction]', err);

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import {
   FEATURES,
   GAMES,
+  TEMPLATES,
   buildPlan,
   normalizeFeatures,
   type Access,
@@ -11,6 +12,7 @@ import {
 } from '@csb/shared';
 import { api, type GuildDetail } from './api';
 import { ui, type UiKey } from './i18n';
+import { Customize } from './Customize';
 
 const ACCESS_LABEL: Record<Access, UiKey | null> = {
   public: null,
@@ -124,6 +126,24 @@ export function Builder({ guildId, lang, onBack }: { guildId: string; lang: Lang
 
         <section className="step">
           <div className="step-head"><span className="step-num">2</span><h2>{ui(lang, 's2')}</h2></div>
+          <div className="templates" role="group" aria-label={ui(lang, 'templates')}>
+            <span className="hint">{ui(lang, 'templates')}</span>
+            {TEMPLATES.map((tpl) => {
+              const features = normalizeFeatures(tpl.features);
+              const active = features.length === config.features.length && features.every((f) => config.features.includes(f));
+              return (
+                <button
+                  key={tpl.id}
+                  className="chip"
+                  aria-pressed={active}
+                  title={tpl.description[lang]}
+                  onClick={() => update({ features })}
+                >
+                  {tpl.name[lang]}
+                </button>
+              );
+            })}
+          </div>
           <p className="hint">{ui(lang, 's2h')}</p>
           <div className="feats">
             {FEATURES.map((f) => {
@@ -145,7 +165,13 @@ export function Builder({ guildId, lang, onBack }: { guildId: string; lang: Lang
         </section>
 
         <section className="step">
-          <div className="step-head"><span className="step-num">3</span><h2>{ui(lang, 's3')}</h2></div>
+          <div className="step-head"><span className="step-num">3</span><h2>{ui(lang, 'sCustom')}</h2></div>
+          <p className="hint">{ui(lang, 'sCustomHint')}</p>
+          <Customize config={config} lang={lang} update={update} />
+        </section>
+
+        <section className="step">
+          <div className="step-head"><span className="step-num">4</span><h2>{ui(lang, 's3')}</h2></div>
           <p className="hint">{ui(lang, 's3h')}</p>
           <textarea
             id="rules"
@@ -164,7 +190,7 @@ export function Builder({ guildId, lang, onBack }: { guildId: string; lang: Lang
         </section>
 
         <section className="step">
-          <div className="step-head"><span className="step-num">4</span><h2>{ui(lang, 's4')}</h2></div>
+          <div className="step-head"><span className="step-num">5</span><h2>{ui(lang, 's4')}</h2></div>
 
           <div className="actions">
             <button className="btn" onClick={save} disabled={saving || (!dirty && detail.configured)}>
@@ -227,14 +253,20 @@ export function Builder({ guildId, lang, onBack }: { guildId: string; lang: Lang
               })}
             </div>
           ))}
-          <div className="cat">
-            <h4>{ui(lang, 'roles')}</h4>
-            <div className="roles">
-              {plan.roles.map((r) => (
-                <span className="role" key={r.key} style={{ '--c': hex(r.color) } as CSSProperties}>{r.name}</span>
-              ))}
-            </div>
-          </div>
+          {(['rank', 'class', 'ping'] as const).map((kind) => {
+            const list = plan.roles.filter((r) => r.kind === kind);
+            if (!list.length) return null;
+            return (
+              <div className="cat" key={kind}>
+                <h4>{ui(lang, kind === 'rank' ? 'roles' : kind === 'class' ? 'classesTitle' : 'pingRolesShort')}</h4>
+                <div className="roles">
+                  {list.map((r) => (
+                    <span className="role" key={r.key} style={{ '--c': hex(r.color) } as CSSProperties}>{r.name}</span>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
         <div className="pv-foot">
           {plan.channels.length} {ui(lang, 'channels')} · {plan.roles.length} {ui(lang, 'rolesCount')}

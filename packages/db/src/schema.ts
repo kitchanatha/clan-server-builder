@@ -67,6 +67,20 @@ export const applications = pgTable(
   (t) => [index('applications_guild_user_idx').on(t.guildId, t.userId)],
 );
 
+/** IGN registration from the welcome Register button or /register. */
+export const registrations = pgTable(
+  'registrations',
+  {
+    guildId: text('guild_id').notNull().references(() => guilds.id, { onDelete: 'cascade' }),
+    userId: text('user_id').notNull(),
+    ign: text('ign').notNull(),
+    className: text('class_name').notNull().default(''),
+    registeredAt: timestamp('registered_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.guildId, t.userId] })],
+);
+
 /** Dashboard login sessions (Discord OAuth). */
 export const sessions = pgTable('sessions', {
   id: text('id').primaryKey(),

@@ -15,7 +15,8 @@ A website where an MMO guild leader picks a game (Aion 2 Global, Ragnarok The Ne
 - Bot permissions: fixed set in `BOT_PERMISSIONS` (shared/config.ts). Never request Administrator.
 - Every user-facing string needs Thai and English.
 - New features: add to `FEATURES` in catalog.ts (`available: true` only when shipped), add channels in `buildPlan()`, add a module in `apps/bot/src/modules/`, wire handlers in `apps/bot/src/index.ts`, add tests in `plan.test.ts`.
-- Schema changes: edit `schema.ts`, then `npm run generate -w @csb/db` to create a migration. Never edit an applied migration.
+- Schema changes: edit `schema.ts`, then `npm run generate -w @csb/db` to create a migration. Never edit an applied migration. Migrations 0000–0001 were hand-written without drizzle snapshots: before the first `generate`, create a baseline snapshot that matches the current schema so the next migration only contains the new changes.
+- Per-guild settings live in the guild config (`ranks`, `classes`, `member`, plus future per-feature settings). Always read stored configs through `parseConfig()` so old rows get defaults.
 - Before committing: `npm run typecheck` and `npm test` must pass. CI runs typecheck, test, build on push.
 - Work on branches, not `main`, unless told otherwise. Never commit `.env`.
 
@@ -29,6 +30,6 @@ A website where an MMO guild leader picks a game (Aion 2 Global, Ragnarok The Ne
 | `npm run typecheck` / `npm test` / `npm run build` | Checks |
 
 ## Roadmap
-- Phase 1 (done in code, needs real-server testing): base layout, welcome + verify, recruitment, roster.
+- Phase 1 (done in code, needs real-server testing): base layout, welcome + register (IGN → nickname), goodbye, role management (pick roles, /rank), recruitment, roster, templates, per-guild customization (rank names, classes, messages, nickname format, class/alert roles).
 - Phase 2: raid / war sign-ups (premium), attendance + points (premium), payments, bot verification.
 - Phase 3: DKP bidding, tickets, MOBA/FPS pack, game API integrations.

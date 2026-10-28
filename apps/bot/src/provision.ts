@@ -11,13 +11,14 @@ import {
   type OverwriteResolvable,
   type Role,
 } from 'discord.js';
-import { buildPlan, rolesForAccess, type PlannedChannel, type ProvisionPlan, type RoleKey } from '@csb/shared';
+import { buildPlan, rolesForAccess, type PlannedChannel, type ProvisionPlan } from '@csb/shared';
 import { getConfig, loadResources, setProvisionStatus, setResource } from './store.js';
 import { categoryKey, channelKey, roleKey } from './util.js';
 import { postRules } from './modules/base.js';
 import { postWelcomePanel } from './modules/welcome.js';
 import { postApplyPanel } from './modules/recruit.js';
 import { refreshRoster } from './modules/roster.js';
+import { postPickRolesPanel } from './modules/roles.js';
 
 const REASON = 'Clan Server Builder setup';
 
@@ -65,6 +66,7 @@ async function runOnce(guild: Guild): Promise<void> {
 
     await postRules(guild, config);
     if (config.features.includes('welcome')) await postWelcomePanel(guild, config);
+    if (config.features.includes('roles')) await postPickRolesPanel(guild, config);
     if (config.features.includes('recruit')) await postApplyPanel(guild, config);
     if (config.features.includes('roster')) await refreshRoster(guild);
 
@@ -85,13 +87,20 @@ function friendlyError(message: string): string {
   return message;
 }
 
-async function ensureRoles(guild: Guild, plan: ProvisionPlan, res: Map<string, string>) {
-  const ids: Partial<Record<RoleKey, string>> = {};
+type RoleIds = Record<string, string>;
+
+async function ensureRoles(guild: Guild, plan: ProvisionPlan, res: Map<string, string>): Promise<RoleIds> {
+  const ids: RoleIds = {};
   for (const r of plan.roles) {
     const key = roleKey(r.key);
     let role: Role | undefined = res.get(key) ? guild.roles.cache.get(res.get(key)!) : undefined;
     role ??= guild.roles.cache.find((x) => x.name === r.name && !x.managed);
-    role ??= await guild.roles.create({ name: r.name, color: r.color, hoist: r.hoist, mentionable: false, reason: REASON });
+    if (!role) {
+      role = await guild.roles.create({ name: r.name, color: r.color, hoist: r.hoist, mentionable: false, reason: REASON });
+    } else if (role.name !== r.name && !role.managed && guild.members.me && guild.members.me.roles.highest.comparePositionTo(role) > 0) {
+      // The dashboard owns names of roles it manages (e.g. a guild renamed "Officer" to "Elite").
+      await role.setName(r.name, REASON).catch(() => undefined);
+    }
     if (res.get(key) !== role.id) await setResource(guild.id, key, role.id);
     ids[r.key] = role.id;
   }
@@ -117,7 +126,7 @@ async function ensureChannel(
   guild: Guild,
   ch: PlannedChannel,
   plan: ProvisionPlan,
-  roleIds: Partial<Record<RoleKey, string>>,
+  roleIds: RoleIds,
   categoryIds: Record<string, string>,
   res: Map<string, string>,
 ) {
@@ -155,7 +164,7 @@ export function buildOverwrites(
   guild: Guild,
   ch: PlannedChannel,
   plan: ProvisionPlan,
-  roleIds: Partial<Record<RoleKey, string>>,
+  roleIds: RoleIds,
 ): OverwriteResolvable[] {
   const { ViewChannel, SendMessages, Connect, EmbedLinks, AttachFiles, ReadMessageHistory, CreatePublicThreads } =
     PermissionFlagsBits;

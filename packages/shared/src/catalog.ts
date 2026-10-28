@@ -38,6 +38,8 @@ export const GAMES: readonly GamePreset[] = [
 export type FeatureId =
   | 'base'
   | 'welcome'
+  | 'goodbye'
+  | 'roles'
   | 'recruit'
   | 'roster'
   | 'events'
@@ -66,8 +68,24 @@ export const FEATURES: readonly Feature[] = [
   },
   {
     id: 'welcome', tier: 'free', available: true,
-    name: { th: 'ต้อนรับ + ยืนยันตัวตน', en: 'Welcome + verify' },
-    description: { th: 'ข้อความต้อนรับ กดยอมรับกฎเพื่อเข้าเซิร์ฟ', en: 'Welcome message and a rules button that unlocks the server' },
+    name: { th: 'ต้อนรับ + ลงทะเบียน', en: 'Welcome + register' },
+    description: {
+      th: 'ข้อความต้อนรับ สมาชิกใหม่กรอกชื่อในเกม บอทตั้งชื่อเล่นให้อัตโนมัติ',
+      en: 'Welcome message; new members enter their in-game name and the bot sets their nickname',
+    },
+  },
+  {
+    id: 'goodbye', tier: 'free', available: true,
+    name: { th: 'ข้อความลาก่อน', en: 'Goodbye messages' },
+    description: { th: 'แจ้งเมื่อมีคนออกจากเซิร์ฟ', en: 'Post a message when someone leaves the server' },
+  },
+  {
+    id: 'roles', tier: 'free', available: true,
+    name: { th: 'จัดการบทบาท', en: 'Role management' },
+    description: {
+      th: 'สมาชิกเลือกบทบาทอาชีพและการแจ้งเตือนเอง ออฟฟิสเซอร์เลื่อนยศด้วย /rank',
+      en: 'Members pick class and alert roles; officers promote with /rank',
+    },
   },
   {
     id: 'recruit', tier: 'free', available: true,
@@ -101,7 +119,39 @@ export const FEATURES: readonly Feature[] = [
   },
 ];
 
-export const DEFAULT_FEATURES: FeatureId[] = ['base', 'welcome', 'recruit', 'roster'];
+export const DEFAULT_FEATURES: FeatureId[] = ['base', 'welcome', 'goodbye', 'roles', 'recruit', 'roster'];
+
+/** Starting points on the dashboard. Picking one sets the feature list; everything stays editable. */
+export interface Template {
+  id: 'member' | 'recruiting' | 'full';
+  name: Localized;
+  description: Localized;
+  features: FeatureId[];
+}
+
+export const TEMPLATES: readonly Template[] = [
+  {
+    id: 'member',
+    name: { th: 'จัดการสมาชิก', en: 'Member management' },
+    description: {
+      th: 'ต้อนรับ ลงทะเบียนชื่อในเกม ลาก่อน และบทบาท',
+      en: 'Welcome, IGN registration, goodbye and roles',
+    },
+    features: ['base', 'welcome', 'goodbye', 'roles'],
+  },
+  {
+    id: 'recruiting',
+    name: { th: 'กิลด์รับสมาชิก', en: 'Recruiting guild' },
+    description: { th: 'จัดการสมาชิก + ใบสมัครและรายชื่อ', en: 'Member management plus applications and roster' },
+    features: ['base', 'welcome', 'goodbye', 'roles', 'recruit', 'roster'],
+  },
+  {
+    id: 'full',
+    name: { th: 'ครบทุกอย่าง', en: 'Everything' },
+    description: { th: 'ทุกฟีเจอร์ที่เปิดให้ใช้ตอนนี้', en: 'Every feature available now' },
+    features: ['base', 'welcome', 'goodbye', 'roles', 'recruit', 'roster', 'events', 'attendance', 'tickets'],
+  },
+];
 
 export function getGame(id: GameId): GamePreset {
   const g = GAMES.find((x) => x.id === id);

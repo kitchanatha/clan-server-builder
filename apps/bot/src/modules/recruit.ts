@@ -18,7 +18,7 @@ import {
   type StringSelectMenuInteraction,
 } from 'discord.js';
 import { and, applications, eq, members } from '@csb/db';
-import { getGame, t, type GuildConfig } from '@csb/shared';
+import { classList, getGame, t, type GuildConfig } from '@csb/shared';
 import { db, hasFeature } from '../store.js';
 import { getRoleId, getTextChannel, isStaff, parsePower, upsertMessage } from '../util.js';
 import { BRAND_COLOR } from './base.js';
@@ -72,7 +72,7 @@ export async function startApplication(
   const select = new StringSelectMenuBuilder()
     .setCustomId(APPLY_CLASS_ID)
     .setPlaceholder(t(config.lang, 'pickClass'))
-    .addOptions(getGame(config.game).classes.slice(0, 25).map((c) => ({ label: c, value: c })));
+    .addOptions(classList(config.game, config.classes).slice(0, 25).map((c) => ({ label: c, value: c })));
   await i.reply({
     content: t(config.lang, 'pickClass'),
     components: [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select)],

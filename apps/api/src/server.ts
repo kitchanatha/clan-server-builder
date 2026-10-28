@@ -8,9 +8,11 @@ import {
   CONFIG_CHANGED_CHANNEL,
   FEATURES,
   GAMES,
+  TEMPLATES,
   defaultConfig,
   guildConfigSchema,
   normalizeFeatures,
+  parseConfig,
   type ConfigChangedMessage,
 } from '@csb/shared';
 import {
@@ -168,7 +170,7 @@ export async function buildServer(deps: ServerDeps) {
   // ---------- public ----------
 
   app.get('/api/health', async () => ({ ok: true }));
-  app.get('/api/catalog', async () => ({ games: GAMES, features: FEATURES }));
+  app.get('/api/catalog', async () => ({ games: GAMES, features: FEATURES, templates: TEMPLATES }));
 
   // ---------- signed in ----------
 
@@ -209,7 +211,7 @@ export async function buildServer(deps: ServerDeps) {
         id: g.id,
         name: g.name,
         icon: guildIconUrl(g),
-        config: row ? { ...row.config, features: normalizeFeatures(row.config.features) } : defaultConfig('th'),
+        config: row ? parseConfig(row.config) : defaultConfig('th'),
         configured: !!row,
         botInstalled: row?.botInstalled ?? false,
         provisionStatus: row?.provisionStatus ?? 'idle',

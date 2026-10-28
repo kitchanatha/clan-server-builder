@@ -9,6 +9,44 @@ export const commands = [
     .setContexts(InteractionContextType.Guild),
 
   new SlashCommandBuilder()
+    .setName('register')
+    .setDescription('Register or update your in-game name')
+    .setDescriptionLocalizations({ th: 'ลงทะเบียนหรือแก้ไขชื่อในเกม' })
+    .setContexts(InteractionContextType.Guild),
+
+  new SlashCommandBuilder()
+    .setName('rank')
+    .setDescription('Manage member ranks (staff)')
+    .setDescriptionLocalizations({ th: 'จัดการยศสมาชิก (ทีมงาน)' })
+    .setContexts(InteractionContextType.Guild)
+    .addSubcommand((s) =>
+      s
+        .setName('set')
+        .setDescription('Give a member a rank')
+        .setDescriptionLocalizations({ th: 'ตั้งยศให้สมาชิก' })
+        .addUserOption((o) => o.setName('user').setDescription('Member').setRequired(true))
+        .addStringOption((o) =>
+          o
+            .setName('rank')
+            .setDescription('Rank')
+            .setRequired(true)
+            .addChoices(
+              { name: 'Leader', value: 'leader' },
+              { name: 'Officer', value: 'officer' },
+              { name: 'Member', value: 'member' },
+              { name: 'Guest', value: 'guest' },
+            ),
+        ),
+    )
+    .addSubcommand((s) =>
+      s
+        .setName('remove')
+        .setDescription('Remove all ranks from a member')
+        .setDescriptionLocalizations({ th: 'ลบยศทั้งหมดของสมาชิก' })
+        .addUserOption((o) => o.setName('user').setDescription('Member').setRequired(true)),
+    ),
+
+  new SlashCommandBuilder()
     .setName('profile')
     .setDescription('Add or update your roster entry')
     .setDescriptionLocalizations({ th: 'เพิ่มหรือแก้ไขข้อมูลของคุณในรายชื่อ' })

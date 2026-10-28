@@ -10,7 +10,7 @@ import {
   type Guild,
 } from 'discord.js';
 import { and, desc, eq, members } from '@csb/db';
-import { getGame, t, type GuildConfig, type Lang } from '@csb/shared';
+import { classList, t, type GuildConfig, type Lang } from '@csb/shared';
 import { db, getConfig, hasFeature } from '../store.js';
 import { getRoleId, getTextChannel, isStaff, parsePower, upsertMessage } from '../util.js';
 import { BRAND_COLOR } from './base.js';
@@ -136,7 +136,7 @@ export async function handleRoster(i: ChatInputCommandInteraction<'cached'>): Pr
 /** Class autocomplete for /profile and /roster view, from the server's game preset. */
 export async function handleClassAutocomplete(i: AutocompleteInteraction<'cached'>): Promise<void> {
   const config = await getConfig(i.guildId);
-  const classes = config ? getGame(config.game).classes : [];
+  const classes = config ? classList(config.game, config.classes) : [];
   const typed = String(i.options.getFocused()).toLowerCase();
   await i.respond(
     classes
