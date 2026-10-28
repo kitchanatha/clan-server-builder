@@ -1,0 +1,23 @@
+{
+  "name": "clan-server-builder",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Pick a game and features on a website; a Discord bot builds and runs the guild server.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build:libs": "npm run build -w @csb/shared && npm run build -w @csb/db",
+    "build": "npm run build:libs && npm run build -w @csb/bot && npm run build -w @csb/api && npm run build -w @csb/web",
+    "typecheck": "npm run build:libs && npm run typecheck -w @csb/bot -w @csb/api -w @csb/web",
+    "test": "npm run build:libs && npm run test -w @csb/shared -w @csb/api",
+    "dev:bot": "npm run build:libs && npm run dev -w @csb/bot",
+    "dev:api": "npm run build:libs && npm run dev -w @csb/api",
+    "dev:web": "npm run dev -w @csb/web",
+    "db:migrate": "npm run build:libs && npm run migrate -w @csb/db"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

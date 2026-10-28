@@ -1,0 +1,30 @@
+{
+  "name": "@csb/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "generate": "drizzle-kit generate",
+    "migrate": "node --env-file-if-exists=../../.env dist/migrate.js"
+  },
+  "dependencies": {
+    "@csb/shared": "0.1.0",
+    "drizzle-orm": "^0.38.4",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.10",
+    "drizzle-kit": "^0.30.2",
+    "typescript": "^5.7.3"
+  }
+}

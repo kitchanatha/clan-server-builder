@@ -1,0 +1,23 @@
+{
+  "name": "@csb/bot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsx watch --env-file-if-exists=../../.env src/index.ts",
+    "start": "node --env-file-if-exists=../../.env dist/index.js"
+  },
+  "dependencies": {
+    "@csb/db": "0.1.0",
+    "@csb/shared": "0.1.0",
+    "discord.js": "^14.17.3",
+    "ioredis": "^5.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
