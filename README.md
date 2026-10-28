@@ -2,7 +2,9 @@
 
 A website where an MMO guild leader picks a game and features, and one shared Discord bot builds and runs the server: channels, roles, permissions, a welcome/verify gate, recruitment, and a roster. Thai and English throughout.
 
-Phase 1 ships four modules: **Base layout**, **Welcome + verify**, **Recruitment**, **Roster**. Raid sign-ups, attendance/points, tickets and DKP are in the catalog as "coming soon".
+Free modules: **Base layout**, **Welcome + register**, **Goodbye**, **Role management**, **Recruitment**, **Roster**. Raid sign-ups, attendance/points, tickets and DKP are in the catalog as "coming soon".
+
+Templates on the dashboard set a starting feature list: **Member management** (welcome, register, goodbye, roles), **Recruiting guild** (+ applications and roster), **Everything**. Each guild then customizes its own rank names, class list, nickname format, welcome/goodbye text, class roles and alert roles.
 
 Launch presets: **Aion 2 (Global)**, **Ragnarok The New World**, and **Any MMO**.
 
@@ -59,21 +61,33 @@ Requirements: Node 20+, Docker.
 
 | Category | Channels | Who can see |
 | --- | --- | --- |
-| INFO | #announcements, #rules, #welcome | Everyone, read-only |
-| RECRUITMENT | #apply-here | After accepting rules, read-only |
-| CHAT | #general, #screenshots | After accepting rules |
+| INFO | #announcements, #rules, #welcome, #arrivals | Everyone, read-only |
+| INFO | #pick-roles | After registering, read-only |
+| RECRUITMENT | #apply-here | After registering, read-only |
+| CHAT | #general, #screenshots | After registering |
 | GUILD | #guild-chat, #roster | Members |
 | STAFF | #applications, #officer-chat | Officers, Leaders |
-| VOICE | Lobby; Party 1, Party 2 | After rules; Members |
+| VOICE | Lobby; Party 1, Party 2 | After registering; Members |
 
-Roles: **Leader** (given to the server owner), **Officer**, **Member**, **Guest** (from the rules button).
+Ranks: **Leader** (given to the server owner), **Officer**, **Member**, **Guest** (from registering). Each guild can rename them. Optional class roles and alert roles are added when turned on.
 
 The bot's role must sit **above** these roles in Server Settings → Roles, or it can't assign them. It asks only for Manage Roles, Manage Channels, View, Send, Embed, Attach, Read History, Manage Messages and Connect, never Administrator.
+
+## Member management
+
+- **Register:** new members press **Register** in #welcome (or use `/register`), pick their class if the guild asks for it, and type their in-game name. The bot sets their nickname using the guild's format (e.g. `[Cleric] Boom`), gives the Guest rank (unlocking the server) and, if class roles are on, their class role. Registering again updates the name.
+- **Welcome / goodbye:** a greeting in #arrivals when someone joins, and a goodbye when they leave (shows their registered IGN). Text is customizable with `{user} {name} {guild} {count} {welcome}`.
+- **Pick roles:** #pick-roles has menus for the class role (one) and alert roles (any, e.g. Raid Alerts, Guild War).
+- **Ranks:** `/rank set user rank` and `/rank remove user`. Officers can set Member/Guest; only Leaders (or Manage Server) can give or take Officer/Leader.
+
+The bot needs **Manage Nicknames** for registration. Servers that installed the bot before this feature should re-invite it from the dashboard to add that permission. The bot can't rename the server owner; they get a message asking them to set it themselves.
 
 ## Slash commands
 
 | Command | Who | What |
 | --- | --- | --- |
+| `/register` | Anyone | Register or update your in-game name and class |
+| `/rank set user rank` / `/rank remove user` | Staff | Change ranks (Officer/Leader: Leaders only) |
 | `/apply` | Anyone | Same as the Apply button: pick class → form → goes to #applications |
 | `/profile ign class power [playtime]` | Members | Add or update your roster entry (class autocompletes from the game preset) |
 | `/roster view [class]` | Members | Roster sorted by power |

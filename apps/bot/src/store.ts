@@ -1,6 +1,6 @@
 // Database access used by the bot.
 import { and, createDb, eq, guilds, resources, type Db } from '@csb/db';
-import { defaultConfig, normalizeFeatures, type FeatureId, type GuildConfig } from '@csb/shared';
+import { defaultConfig, parseConfig, type FeatureId, type GuildConfig } from '@csb/shared';
 import { env } from './env.js';
 
 export const { db, pool } = createDb(env.databaseUrl);
@@ -16,7 +16,7 @@ export async function getGuild(guildId: string): Promise<GuildRow | undefined> {
 export async function getConfig(guildId: string): Promise<GuildConfig | undefined> {
   const row = await getGuild(guildId);
   if (!row) return undefined;
-  return { ...row.config, features: normalizeFeatures(row.config.features) };
+  return parseConfig(row.config);
 }
 
 export async function hasFeature(guildId: string, feature: FeatureId): Promise<GuildConfig | undefined> {

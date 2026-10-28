@@ -10,12 +10,13 @@ import {
 import type { RoleKey } from '@csb/shared';
 import { getResource, setResource } from './store.js';
 
-export const roleKey = (k: RoleKey) => `role:${k}`;
+/** Resource key for a planned role: rank key ("officer") or "class:..." / "ping:...". */
+export const roleKey = (k: string) => `role:${k}`;
 export const channelKey = (k: string) => `channel:${k}`;
 export const categoryKey = (k: string) => `category:${k}`;
 export const messageKey = (k: string) => `message:${k}`;
 
-export async function getRoleId(guildId: string, key: RoleKey): Promise<string | undefined> {
+export async function getRoleId(guildId: string, key: RoleKey | string): Promise<string | undefined> {
   return getResource(guildId, roleKey(key));
 }
 
@@ -58,10 +59,18 @@ export async function upsertMessage(
   await setResource(guild.id, messageKey(key), sent.id);
 }
 
-export function chunk<T>(items: T[], size: number): T[][] {
-  const out: T[][] = [];
-  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
-  return out;
+/** True when the member is a Leader or has Manage Server (may hand out Officer and Leader). */
+export async function isLeader(member: GuildMember): Promise<boolean> {
+  if (member.permissions.has(PermissionFlagsBits.ManageGuild)) return true;
+  const leader = await getRoleId(member.guild.id, 'leader');
+  return !!leader && member.roles.cache.has(leader);
+}
+
+/** Whether the bot can assign this role (it must sit below the bot's highest role). */
+export function botCanManageRole(guild: Guild, roleId: string): boolean {
+  const role = guild.roles.cache.get(roleId);
+  const me = guild.members.me;
+  return !!role && !!me && !role.managed && me.roles.highest.comparePositionTo(role) > 0;
 }
 
 /** Accepts '1,234,567', '1 234 567' or '1234567'. */
